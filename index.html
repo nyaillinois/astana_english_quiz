@@ -1,0 +1,748 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Проверь свой английский</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+/* Layout: a 5×5 sheet of postage stamps on a cool paper ground; each stamp opens a QR, the QR opens one question on the phone. */
+:root {
+  --bg: #e7ebf2;
+  --surface: #f8fafd;
+  --fg: #131a2c;
+  --muted: #58627a;
+  --line: #cbd3e0;
+  --red: #c4122f;
+  --navy: #1f3c8c;
+  --green: #0e6a5b;
+  --gold: #e0a428;
+  --on-light: #ffffff;
+  --on-gold: #1c1810;
+  --focus: #e0a428;
+  --font-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --font-body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1322; --surface: #171e33; --fg: #e8ecf5; --muted: #9ba5be; --line: #2a3350;
+    --red: #dc3550; --navy: #4166cc; --green: #1d8f7a; --gold: #e8b23b;
+    --on-light: #ffffff; --on-gold: #1c1810; --focus: #e8b23b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1322; --surface: #171e33; --fg: #e8ecf5; --muted: #9ba5be; --line: #2a3350;
+  --red: #dc3550; --navy: #4166cc; --green: #1d8f7a; --gold: #e8b23b;
+  --on-light: #ffffff; --on-gold: #1c1810; --focus: #e8b23b;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+
+/* ---------- perforated stamp edge ---------- */
+.perf {
+  --h: 4px;   /* hole radius */
+  --t: 13px;  /* hole spacing */
+  --g: #0000 var(--h), #000 calc(var(--h) + .6px);
+  padding: 9px;
+  background: var(--c);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    radial-gradient(circle at 0 0, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 100% 0, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 0 100%, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 100% 100%, var(--g)) 0 0 / var(--t) var(--t) round;
+  -webkit-mask-composite: source-over, source-in, source-in, source-in;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    radial-gradient(circle at 0 0, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 100% 0, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 0 100%, var(--g)) 0 0 / var(--t) var(--t) round,
+    radial-gradient(circle at 100% 100%, var(--g)) 0 0 / var(--t) var(--t) round;
+  mask-composite: add, intersect, intersect, intersect;
+}
+.c0 { --c: var(--red);   --on: var(--on-light); }
+.c1 { --c: var(--navy);  --on: var(--on-light); }
+.c2 { --c: var(--green); --on: var(--on-light); }
+.c3 { --c: var(--gold);  --on: var(--on-gold); }
+
+/* ---------- board ---------- */
+#board {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-block: clamp(20px, 4vw, 48px) 40px;
+  display: grid;
+  gap: clamp(18px, 3vw, 32px);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+.head-text { min-width: 0; display: grid; gap: 8px; }
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(26px, 5.2vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+h1 .en { color: var(--red); }
+.lead { margin: 0; color: var(--muted); max-width: 56ch; }
+.tally {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.tally-count { font-weight: 600; white-space: nowrap; }
+.tally-count b { font-family: var(--font-display); font-size: 20px; }
+.btn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 22px);
+}
+.card {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
+  filter: drop-shadow(0 1px 1px rgb(10 20 40 / .18)) drop-shadow(0 6px 14px rgb(10 20 40 / .12));
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform .25s cubic-bezier(.2,.8,.3,1.2), filter .25s;
+  container-type: inline-size;
+}
+.card:hover { transform: rotate(0deg) translateY(-4px) scale(1.03); }
+.card .perf { height: 100%; }
+.face {
+  position: relative;
+  height: 100%;
+  border: 1.5px solid color-mix(in srgb, var(--on) 55%, transparent);
+  color: var(--on);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 7cqi 8cqi;
+  overflow: hidden;
+}
+.face-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: max(7px, 7.5cqi);
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .85;
+}
+.face-num {
+  align-self: center;
+  justify-self: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 40cqi;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.face-tag {
+  justify-self: center;
+  font-size: max(7px, 8.5cqi);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+}
+/* decorative crown-less "rays" behind the number */
+.face::before {
+  content: "";
+  position: absolute;
+  inset: 22% 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--on) 16%, transparent) 0 40%, transparent 41%),
+              repeating-conic-gradient(color-mix(in srgb, var(--on) 10%, transparent) 0 6deg, transparent 6deg 15deg);
+  pointer-events: none;
+}
+.face > * { position: relative; }
+
+/* postmark on used cards */
+.postmark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.postmark span {
+  width: 74cqi;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: max(2px, 2.4cqi) solid var(--fg);
+  box-shadow: inset 0 0 0 max(2px, 2cqi) var(--bg), inset 0 0 0 max(3px, 3.4cqi) var(--fg);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 10cqi;
+  letter-spacing: .06em;
+  color: var(--fg);
+  transform: rotate(-16deg);
+  opacity: .85;
+}
+.card.used .perf { filter: saturate(.25) brightness(.92); opacity: .55; }
+@container (max-width: 90px) {
+  .face-top, .face-tag { display: none; }
+  .face { grid-template-rows: 1fr; padding: 4px; border-width: 1px; }
+  .face-num { font-size: 46cqi; }
+}
+
+.note {
+  display: grid;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+.note summary { cursor: pointer; font-weight: 600; color: var(--fg); }
+.note details > div { display: grid; gap: 10px; padding-top: 10px; max-width: 70ch; }
+.note p { margin: 0; }
+.mode-row { display: grid; gap: 8px; }
+.mode-row label { display: flex; gap: 10px; align-items: flex-start; color: var(--fg); cursor: pointer; }
+.mode-row input { margin-top: 4px; accent-color: var(--red); }
+.url-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.url-row input {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: 14px;
+}
+
+/* ---------- QR overlay ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow-y: auto;
+}
+.sheet {
+  width: min(100%, 480px);
+  filter: drop-shadow(0 18px 40px rgb(10 20 40 / .28));
+  animation: pop .35s cubic-bezier(.2,.8,.3,1.15);
+}
+.sheet .perf { padding: 12px; --h: 5px; --t: 16px; }
+.sheet-inner {
+  border: 1.5px solid color-mix(in srgb, var(--on) 55%, transparent);
+  color: var(--on);
+  padding: clamp(14px, 4vw, 24px);
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  text-align: center;
+}
+.sheet-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sheet-num { font-family: var(--font-display); font-weight: 800; font-size: 28px; line-height: 1; }
+.sheet-tag { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; opacity: .9; }
+.x {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--on) 50%, transparent);
+  background: transparent;
+  color: var(--on);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.qr-box {
+  background: #ffffff;
+  padding: 14px;
+  border-radius: 6px;
+  line-height: 0;
+}
+.qr-box img, .qr-box canvas { display: block; max-width: 100%; height: auto; }
+.qr-fallback { line-height: 1.4; color: #131a2c; font-size: 14px; word-break: break-all; max-width: 280px; }
+.scan-hint { margin: 0; font-weight: 600; font-size: 17px; }
+.reveal {
+  margin: 0;
+  width: 100%;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--on) 14%, transparent);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+.sheet-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.sheet-actions button {
+  border: 1.5px solid color-mix(in srgb, var(--on) 55%, transparent);
+  background: transparent;
+  color: var(--on);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sheet-actions button.solid { background: var(--on); color: var(--c); border-color: var(--on); }
+.kbd-hint { margin: 0; font-size: 12px; opacity: .75; }
+
+/* ---------- phone question view ---------- */
+#phone {
+  min-height: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding-block: clamp(20px, 6vw, 48px);
+  display: grid;
+  align-content: center;
+  gap: 18px;
+}
+.q-card { filter: drop-shadow(0 14px 30px rgb(10 20 40 / .22)); animation: pop .5s cubic-bezier(.2,.8,.3,1.15); }
+.q-card .perf { padding: 12px; --h: 5px; --t: 16px; }
+.q-inner {
+  border: 1.5px solid color-mix(in srgb, var(--on) 55%, transparent);
+  color: var(--on);
+  padding: clamp(18px, 6vw, 32px);
+  display: grid;
+  gap: 18px;
+  min-height: min(70vh, 560px);
+  align-content: space-between;
+}
+.q-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.q-label { font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; opacity: .9; }
+.q-num { font-family: var(--font-display); font-weight: 800; font-size: clamp(56px, 18vw, 96px); line-height: .9; }
+.q-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(24px, 7vw, 34px);
+  line-height: 1.22;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.q-opts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.q-opts li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--on) 14%, transparent);
+  font-size: 19px;
+  font-weight: 600;
+}
+.q-opts .letter {
+  flex: none;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 14px;
+}
+.q-foot { margin: 0; text-align: center; color: var(--muted); font-size: 14px; }
+.q-missing { text-align: center; display: grid; gap: 12px; }
+
+@keyframes pop {
+  from { transform: translateY(14px) scale(.96) rotate(-1.5deg); }
+  to   { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .sheet, .q-card { transition: none; animation: none; }
+}
+</style>
+
+<main id="board">
+  <header class="head">
+    <div class="head-text">
+      <span class="eyebrow">Викторина · 25 вопросов</span>
+      <h1>Проверь свой <span class="en">English</span></h1>
+      <p class="lead">Выберите марку, и на экране появится QR-код. Наведите на него камеру телефона, чтобы открыть вопрос.</p>
+    </div>
+    <div class="tally">
+      <span class="tally-count">Открыто <b id="used-count">0</b> из 25</span>
+      <button class="btn" id="reset" type="button">Начать заново</button>
+    </div>
+  </header>
+
+  <div class="grid" id="grid" aria-label="Карточки с вопросами"></div>
+
+  <footer class="note">
+    <details id="settings">
+      <summary>Что внутри QR-кода</summary>
+      <div>
+        <div class="mode-row" role="radiogroup" aria-label="Что внутри QR-кода">
+          <label><input type="radio" name="qr-mode" id="mode-text" value="text"> Текст вопроса. Работает на любом телефоне, без интернета и без сайта.</label>
+          <label><input type="radio" name="qr-mode" id="mode-link" value="link"> Ссылка на красивую страницу с вопросом. Нужна общедоступная ссылка на сайт.</label>
+        </div>
+        <p>Для режима «Ссылка» укажите адрес, по которому страница открыта для всех. Если поле пустое, берётся адрес этой страницы.</p>
+        <div class="url-row">
+          <input id="base-url" type="url" inputmode="url" placeholder="https://…" aria-label="Адрес страницы">
+          <button class="btn primary" id="save-url" type="button">Сохранить</button>
+          <button class="btn" id="clear-url" type="button">Сбросить</button>
+        </div>
+        <p id="url-status"></p>
+      </div>
+    </details>
+  </footer>
+</main>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="scan-hint">
+    <div class="perf" id="sheet-perf">
+      <div class="sheet-inner">
+        <div class="sheet-head">
+          <span class="sheet-num" id="sheet-num">№ 1</span>
+          <span class="sheet-tag" id="sheet-tag"></span>
+          <button class="x" id="close-x" type="button" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="qr-box" id="qr"></div>
+        <p class="scan-hint" id="scan-hint">Наведите камеру телефона на код</p>
+        <p class="reveal" id="reveal" hidden></p>
+        <div class="sheet-actions">
+          <button type="button" id="prev">← Пред.</button>
+          <button type="button" id="toggle-q">Показать вопрос</button>
+          <button type="button" id="next">След. →</button>
+          <button type="button" class="solid" id="done">Готово</button>
+        </div>
+        <p class="kbd-hint">Стрелки ← → листают карточки, Esc закрывает</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main id="phone" hidden></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<script>
+// Public link of this page. QR codes point here with #q1 … #q25 added.
+// Empty = use the address the page is opened from.
+const BASE_URL = "";
+// "text" = the question itself sits inside the QR (works with no internet and no site);
+// "link" = the QR opens this page on the phone with the question.
+const DEFAULT_MODE = "link";
+
+const QUESTIONS = [
+  { tag: "Слова",        q: "Как будет «яблоко» на английском языке?" },
+  { tag: "Фразы",        q: "Как по-английски «Здравствуйте»?" },
+  { tag: "Слова",        q: "Скажите по-английски слово «учитель»." },
+  { tag: "Школа",        q: "Назовите по-английски три школьных предмета." },
+  { tag: "Слова",        q: "Как по-английски слово «любовь»?" },
+  { tag: "Числа",        q: "Какое число fifty?", opts: ["15", "50", "5"] },
+  { tag: "Слова",        q: "Как по-английски слово «мороженое»?" },
+  { tag: "Слова",        q: "Скажите любые три слова на английском." },
+  { tag: "Календарь",    q: "Какое слово лишнее?", opts: ["Monday", "Friday", "March", "Sunday"] },
+  { tag: "Праздники",    q: "Как будет на английском «День рождения»?" },
+  { tag: "Слова",        q: "Как по-английски «чай»?" },
+  { tag: "Литература",   q: "Назовите имя любого английского писателя." },
+  { tag: "Фразы",        q: "Скажите по-английски: «Помогите!»" },
+  { tag: "Цвета",        q: "Назовите три цвета на английском." },
+  { tag: "Страны",       q: "Назовите столицу Англии." },
+  { tag: "Америка",      q: "Назовите имя нынешнего президента Америки." },
+  { tag: "Числа",        q: "Какое число нужно, чтобы закончить: «one, two, three, four, ___»?" },
+  { tag: "Литература",   q: "Кто написал «Ромео и Джульетту»?", opts: ["Чарльз Диккенс", "Уильям Шекспир", "Марк Твен"] },
+  { tag: "Лондон",       q: "Как называется знаменитая часовая башня в Лондоне?", opts: ["Биг-Бен", "Тауэр", "Лондонский глаз"] },
+  { tag: "Кино",         q: "Назовите имена известных американских актёров." },
+  { tag: "Слова",        q: "Как будет «самолёт» на английском языке?" },
+  { tag: "Слова",        q: "Как по-английски «собака»?", opts: ["dog", "dock", "duck"] },
+  { tag: "Праздники",    q: "Как зовут доброго дедушку, который дарит подарки на Рождество?" },
+  { tag: "Алфавит",      q: "Назовите по-английски первые три буквы алфавита." },
+  { tag: "Кино",         q: "Как зовут мальчика, который каждый Новый год остаётся один дома?" }
+];
+const LETTERS = ["а", "б", "в", "г", "д"];
+const TILTS = [-1.6, 1.1, -0.6, 1.8, -1.2, 0.7, -1.9, 1.4, -0.4, 0.9];
+
+const $ = (id) => document.getElementById(id);
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+function baseUrl() {
+  const saved = store.get("qr-base");
+  const raw = saved || BASE_URL || location.href;
+  return raw.split("#")[0];
+}
+function linkFor(n) { return baseUrl() + "#q" + n; }
+function mode() {
+  const m = store.get("qr-mode");
+  return m === "link" || m === "text" ? m : DEFAULT_MODE;
+}
+function textFor(n) {
+  const item = QUESTIONS[n - 1];
+  let s = item.q;
+  if (item.opts) s += "\n" + item.opts.map((o, j) => LETTERS[j] + ") " + o).join("\n");
+  return s;
+}
+function qrPayload(n) { return mode() === "text" ? textFor(n) : linkFor(n); }
+
+/* ---------- used cards ---------- */
+let used = new Set();
+try { used = new Set(JSON.parse(store.get("used-cards") || "[]")); } catch (e) {}
+function saveUsed() {
+  store.set("used-cards", JSON.stringify([...used]));
+  $("used-count").textContent = used.size;
+}
+
+/* ---------- board ---------- */
+function renderBoard() {
+  const grid = $("grid");
+  grid.innerHTML = "";
+  QUESTIONS.forEach((item, i) => {
+    const n = i + 1;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "card c" + (i % 4) + (used.has(n) ? " used" : "");
+    b.style.setProperty("--tilt", TILTS[i % TILTS.length] + "deg");
+    b.setAttribute("aria-label", "Вопрос " + n + ", " + item.tag);
+    b.innerHTML =
+      '<div class="perf"><div class="face">' +
+        '<div class="face-top"><span>English</span><span>№' + n + '</span></div>' +
+        '<div class="face-num">' + n + '</div>' +
+        '<div class="face-tag">' + item.tag + '</div>' +
+      '</div></div>' +
+      (used.has(n) ? '<div class="postmark"><span>OK</span></div>' : "");
+    b.addEventListener("click", () => openCard(n));
+    grid.appendChild(b);
+  });
+  $("used-count").textContent = used.size;
+}
+
+/* ---------- QR overlay ---------- */
+let current = 0;
+let lastFocus = null;
+
+function qrSize() {
+  const w = Math.min(window.innerWidth, 520) - 120;
+  const h = window.innerHeight - 330;
+  return Math.max(200, Math.min(420, w, h));
+}
+
+// Builds the QR with a UTF-8 marker (ECI) so phones read Russian letters correctly.
+function drawQR(text, size) {
+  const Z = window.ZXing;
+  if (!Z || !Z.QRCodeEncoder) return null;
+  const E = Z.QRCodeDecoderErrorCorrectionLevel;
+  let fallback = null;
+  // Try several error-correction levels and keep the first code that reads back exactly.
+  for (const level of [E.M, E.L, E.Q, E.H]) {
+    try {
+      const hints = new Map();
+      hints.set(Z.EncodeHintType.CHARACTER_SET, "UTF-8");
+      const m = Z.QRCodeEncoder.encode(text, level, hints).getMatrix();
+      const c = paintQR(m, size);
+      if (!fallback) fallback = c;
+      if (readsBack(Z, c, text)) return c;
+    } catch (e) {}
+  }
+  return fallback;
+}
+function paintQR(m, size) {
+  const cells = m.getWidth();
+  const quiet = 2;
+  const scale = Math.max(3, Math.floor(size / (cells + quiet * 2)));
+  const px = (cells + quiet * 2) * scale;
+  const c = document.createElement("canvas");
+  c.width = px; c.height = px;
+  c.setAttribute("role", "img");
+  c.setAttribute("aria-label", "QR-код вопроса");
+  c.style.width = px + "px";
+  const g = c.getContext("2d");
+  g.fillStyle = "#ffffff";
+  g.fillRect(0, 0, px, px);
+  g.fillStyle = "#131a2c";
+  for (let y = 0; y < cells; y++)
+    for (let x = 0; x < cells; x++)
+      if (m.get(x, y) === 1) g.fillRect((x + quiet) * scale, (y + quiet) * scale, scale, scale);
+  return c;
+}
+function readsBack(Z, canvas, text) {
+  try {
+    const bmp = new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(canvas)));
+    return new Z.QRCodeReader().decode(bmp).getText() === text;
+  } catch (e) {
+    return false;
+  }
+}
+
+function openCard(n) {
+  current = n;
+  const item = QUESTIONS[n - 1];
+  const perf = $("sheet-perf");
+  perf.className = "perf c" + ((n - 1) % 4);
+  $("sheet-num").textContent = "№ " + n;
+  $("sheet-tag").textContent = item.tag;
+  $("reveal").hidden = true;
+  $("reveal").textContent = item.q + (item.opts ? "  " + item.opts.map((o, j) => LETTERS[j] + ") " + o).join("   ") : "");
+  $("toggle-q").textContent = "Показать вопрос";
+
+  const box = $("qr");
+  box.innerHTML = "";
+  const payload = qrPayload(n);
+  const size = qrSize();
+  $("scan-hint").textContent = mode() === "text"
+    ? "Наведите камеру телефона на код: вопрос появится на экране"
+    : "Наведите камеру телефона на код и откройте ссылку";
+  const canvas = drawQR(payload, size);
+  if (canvas) {
+    box.appendChild(canvas);
+  } else {
+    box.innerHTML = '<p class="qr-fallback">Не удалось загрузить генератор QR-кодов.<br>' + esc(payload) + "</p>";
+  }
+
+  if ($("overlay").hidden) lastFocus = document.activeElement;
+  $("overlay").hidden = false;
+  $("done").focus();
+
+  if (!used.has(n)) { used.add(n); saveUsed(); }
+}
+
+function closeCard() {
+  $("overlay").hidden = true;
+  renderBoard();
+  const target = $("grid").children[current - 1];
+  (target || lastFocus)?.focus?.();
+}
+
+function step(d) { openCard(((current - 1 + d + 25) % 25) + 1); }
+
+$("close-x").addEventListener("click", closeCard);
+$("done").addEventListener("click", closeCard);
+$("prev").addEventListener("click", () => step(-1));
+$("next").addEventListener("click", () => step(1));
+$("toggle-q").addEventListener("click", () => {
+  const r = $("reveal");
+  r.hidden = !r.hidden;
+  $("toggle-q").textContent = r.hidden ? "Показать вопрос" : "Скрыть вопрос";
+});
+$("overlay").addEventListener("click", (e) => { if (e.target === $("overlay")) closeCard(); });
+document.addEventListener("keydown", (e) => {
+  if ($("overlay").hidden) return;
+  if (e.key === "Escape") closeCard();
+  else if (e.key === "ArrowRight") step(1);
+  else if (e.key === "ArrowLeft") step(-1);
+});
+
+$("reset").addEventListener("click", () => {
+  used.clear();
+  saveUsed();
+  renderBoard();
+});
+
+/* ---------- link settings ---------- */
+function showUrlStatus() {
+  const saved = store.get("qr-base");
+  $("base-url").value = saved || BASE_URL || "";
+  $("url-status").textContent = "Сейчас коды ведут на: " + baseUrl() + "#q1 … #q25";
+}
+$("save-url").addEventListener("click", () => {
+  const v = $("base-url").value.trim();
+  if (!/^https?:\/\//i.test(v)) {
+    $("url-status").textContent = "Адрес должен начинаться с https:// или http://";
+    return;
+  }
+  store.set("qr-base", v.split("#")[0]);
+  showUrlStatus();
+});
+$("clear-url").addEventListener("click", () => { store.del("qr-base"); showUrlStatus(); });
+function showMode() { $("mode-" + mode()).checked = true; }
+document.querySelectorAll('input[name="qr-mode"]').forEach((r) =>
+  r.addEventListener("change", () => { store.set("qr-mode", r.value); showMode(); })
+);
+showMode();
+
+/* ---------- phone view ---------- */
+function esc(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function renderPhone(n) {
+  const item = QUESTIONS[n - 1];
+  const phone = $("phone");
+  if (!item) {
+    phone.innerHTML = '<div class="q-missing"><p>Такого вопроса нет. Отсканируйте код ещё раз.</p></div>';
+    return;
+  }
+  const opts = item.opts
+    ? '<ol class="q-opts">' + item.opts.map((o, j) => '<li><span class="letter">' + LETTERS[j] + "</span>" + esc(o) + "</li>").join("") + "</ol>"
+    : "";
+  phone.innerHTML =
+    '<div class="q-card"><div class="perf c' + ((n - 1) % 4) + '"><div class="q-inner">' +
+      '<div class="q-top"><div><div class="q-label">Вопрос</div><div class="q-label" style="opacity:.7">' + esc(item.tag) + '</div></div>' +
+      '<div class="q-num">' + n + "</div></div>" +
+      '<p class="q-text">' + esc(item.q) + "</p>" +
+      opts +
+    "</div></div></div>" +
+    '<p class="q-foot">Проверь свой английский · вопрос ' + n + " из 25</p>";
+}
+
+function route() {
+  const m = location.hash.match(/^#q(\d{1,2})$/i);
+  if (m) {
+    $("board").hidden = true;
+    $("overlay").hidden = true;
+    $("phone").hidden = false;
+    renderPhone(parseInt(m[1], 10));
+    document.title = "Вопрос " + m[1] + " · Проверь свой английский";
+  } else {
+    $("phone").hidden = true;
+    $("board").hidden = false;
+    document.title = "Проверь свой английский";
+  }
+}
+
+renderBoard();
+showUrlStatus();
+route();
+window.addEventListener("hashchange", route);
+</script>
